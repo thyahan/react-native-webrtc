@@ -1,4 +1,3 @@
-
 import { requireNativeComponent } from 'react-native';
 
 /**
@@ -55,6 +54,12 @@ import { requireNativeComponent } from 'react-native';
  * video(s) which appear above the remote video(s).
  *
  * zOrder: number
+ */
+
+/**
+ * A snapshot object
+ *
+ * snapshotOption: Object,
  */
 
 export default requireNativeComponent('RTCVideoView');
