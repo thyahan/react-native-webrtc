@@ -11,7 +11,7 @@ import androidx.core.view.ViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -581,17 +581,20 @@ public class WebRTCView extends ViewGroup {
         // --- should we check this.streamURL and this.videoTrack are not null? not is controled at js side.
         if (snapshotOption == null) {
             // --- do nothing
+            Log.d(TAG, "snapshot: snapshotOption is null");
             return;
         }
 
         String snapshotId = snapshotOption.getString("id");
         if (snapshotId == null || snapshotId.equals(mSnapshotId)) {
             // --- do nothing due to invalid arguments or id not changed
+            Log.d(TAG, "snapshot: snapshotId is null or same as previous " + snapshotId + "|" + mSnapshotId);
             return;
         }
 
         if (mIsTakingSnapshot) {
             // --- do nothing due to is taking snapshot
+            Log.d(TAG, "snapshot: is taking snapshot");
             return;
         }
         // --- store id
@@ -605,10 +608,11 @@ public class WebRTCView extends ViewGroup {
             surfaceViewRenderer.addFrameListener(new EglRenderer.FrameListener() {
                 @Override
                 public void onFrame(Bitmap bitmap) {
+                    Log.d(TAG, "snapshot: onFrame");
                     //runOnUiThread(() -> {
                     ThreadUtils.runOnExecutor(() -> {
                         try {
-                            String saveTarget = "cameraRoll";
+                            String saveTarget = "base64";
                             double jpegQuality = 1;
                             int maxSize = 5000;
 
@@ -622,14 +626,20 @@ public class WebRTCView extends ViewGroup {
                                 maxSize = snapshotOption.getInt("maxSize");
                             }
 
+                            Log.d(TAG, "snapshot: saveTarget=" + saveTarget + ", jpegQuality=" + jpegQuality + ", maxSize=" + maxSize);
+
                             String file = SnapshotUtils.savePicture(reactContext, bitmap, saveTarget, jpegQuality, maxSize);
+
+                            Log.d(TAG, "snapshot: file=" + file);
                             params.putString("file", file);
                         } catch (Exception e) {
                             params.putString("error", String.format("onFrame() failed: %s", e.getMessage()));
                         } finally {
                             surfaceViewRenderer.removeFrameListener(this);
                             mIsTakingSnapshot = false;
+                            Log.d(TAG, "snapshot: module sendEvent WebRTCViewSnapshotResult start " + params.toString());
                             module.sendEvent("WebRTCViewSnapshotResult", params);
+                            Log.d(TAG, "snapshot: module sendEvent WebRTCViewSnapshotResult done");
                         }
                     });
                 }
@@ -637,7 +647,9 @@ public class WebRTCView extends ViewGroup {
         } catch (Exception e) {
             mIsTakingSnapshot = false;
             params.putString("error", String.format("failed: %s", e.getMessage()));
+            Log.d(TAG, "snapshot: CATCH module sendEvent WebRTCViewSnapshotResult start " + params.toString());
             module.sendEvent("WebRTCViewSnapshotResult", params);
+            Log.d(TAG, "snapshot: CATCH module sendEvent WebRTCViewSnapshotResult done");
         }
     }
 }

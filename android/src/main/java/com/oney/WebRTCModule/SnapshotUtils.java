@@ -28,10 +28,17 @@ class SnapshotUtils {
     public static final String RCT_CAMERA_SAVE_TARGET_TEMP = "temp";
 
     public static String encodeToBase64String(byte[] pic) {
-        return Base64.getEncoder().encodeToString(pic);
+        try {
+            Log.d(TAG, "snapshot encodeToBase64String try");
+            return Base64.getEncoder().encodeToString(pic);
+        } catch (Exception e) {
+            Log.e(TAG, "snapshot encodeToBase64String error: " + e.getMessage());
+            return null;
+        }
     }
 
     public static synchronized String savePicture(ReactContext reactContext, Bitmap bitmap, String saveTarget, double maxJpegQuality, int maxSize) throws IOException {
+        Log.d(TAG, "snapshot start savePicture");
         // --- only resize if image larger than maxSize
         bitmap = resizeBitmap(bitmap, maxSize);
         int jpegQuality = (int) (100 * maxJpegQuality);
@@ -57,6 +64,7 @@ class SnapshotUtils {
             }
             default: {
                 // --- memory
+                Log.d(TAG, "snapshot save picture as base64");
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, jpegQuality, stream);
                 byte[] jpeg = stream.toByteArray();
